@@ -63,7 +63,7 @@ class Hash32 : public node::ObjectWrap {
 
     static uint32_t convert_seed(Local<Value> seed_val, bool &did_throw) {
       if (seed_val->IsUint32()) {
-        return seed_val->Uint32Value();
+        return Nan::To<uint32_t>(seed_val).FromMaybe(0);
       } else if (node::Buffer::HasInstance(seed_val)) {
         char* seed_buf = node::Buffer::Data(seed_val);
         if (node::Buffer::Length(seed_val) == 4) {
@@ -148,7 +148,7 @@ class Hash32 : public node::ObjectWrap {
     }
 
 
-    static void Initialize(Handle<Object> target) {
+    static void Initialize(Local<Object> target) {
       Local<String> name = Nan::New<String>("XXHash32").ToLocalChecked();
       Local<FunctionTemplate> tpl = Nan::New<FunctionTemplate>(New);
 
@@ -158,7 +158,8 @@ class Hash32 : public node::ObjectWrap {
       Nan::SetPrototypeMethod(tpl, "update", Update);
       Nan::SetPrototypeMethod(tpl, "digest", Digest);
       Nan::SetMethod(tpl, "hash", StaticHash);
-      target->Set(name, tpl->GetFunction());
+
+      target->Set(name, tpl->GetFunction(Isolate::GetCurrent()->GetCurrentContext()).ToLocalChecked());
 
       constructor_32.Reset(tpl);
     }
