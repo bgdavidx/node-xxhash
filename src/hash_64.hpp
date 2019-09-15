@@ -161,6 +161,49 @@ class Hash64 : public node::ObjectWrap {
         info.GetReturnValue().Set(convert_result(result, node::BUFFER));
     }
 
+    static NAN_METHOD(StaticHashStringOutBase64) {
+      if (info.Length() < 1)
+        return Nan::ThrowTypeError("Expected data argument");
+      else if (!info[0]->IsString())
+        return Nan::ThrowTypeError("data argument must be a string");
+
+      uint64_t seed = 0xCAFEBABE; // hardcoding seed for performance
+
+      Nan::Utf8String data(info[0]);
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+      uint64_t result = XXH64(static_cast<char*>(*data),
+                              data.length(),
+                              seed);
+#else
+      uint64_t result = XXH_swap64(XXH64(static_cast<char*>(*data),
+                                         data.length(),
+                                         seed));
+#endif
+
+      info.GetReturnValue().Set(convert_result(result, node::BASE64));
+    }
+
+    static NAN_METHOD(StaticHashBufferOutBase64) {
+      if (!node::Buffer::HasInstance(info[0]))
+        return Nan::ThrowTypeError("data argument must be a Buffer");
+
+      uint64_t seed = 0xCAFEBABE; // hardcoding seed for performance
+
+      Local<Value> data = info[0];
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+      uint64_t result = XXH64(node::Buffer::Data(data),
+                              node::Buffer::Length(data),
+                              seed);
+#else
+      uint64_t result = XXH_swap64(XXH64(node::Buffer::Data(data),
+                                         node::Buffer::Length(data),
+                                         seed));
+#endif
+
+      info.GetReturnValue().Set(convert_result(result, node::BASE64));
+    }
 
     static void Initialize(Local<Object> target) {
       Local<String> name = Nan::New<String>("XXHash64").ToLocalChecked();
@@ -173,6 +216,8 @@ class Hash64 : public node::ObjectWrap {
       Nan::SetPrototypeMethod(tpl, "digest", Digest);
 
       Nan::SetMethod(tpl, "hash", StaticHash);
+      Nan::SetMethod(tpl, "hashStringOutBase64", StaticHashStringOutBase64);
+      Nan::SetMethod(tpl, "hashBufferOutBase64", StaticHashBufferOutBase64);
 
       target->Set(name, tpl->GetFunction(Isolate::GetCurrent()->GetCurrentContext()).ToLocalChecked());
 
