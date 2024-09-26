@@ -1,11 +1,11 @@
 {
   "name": "xxhash",
-  "version": "1.0.0",
+  "version": "1.0.22",
   "author": "Brian White <mscdex@mscdex.net>",
   "description": "An xxhash binding for node.js",
   "main": "./lib/xxhash",
   "dependencies": {
-    "nan": "^2.14.0"
+    "nan": "^2.20.0"
   },
   "scripts": {
     "install": "node-gyp rebuild",

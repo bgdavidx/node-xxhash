@@ -5,7 +5,7 @@
 
 using namespace v8;
 
-Nan::Persistent<FunctionTemplate> constructor_64;
+Nan::Persistent<Function> constructor_64;
 
 class Hash64 : public node::ObjectWrap {
   public:
@@ -219,10 +219,11 @@ class Hash64 : public node::ObjectWrap {
       Nan::SetMethod(tpl, "hashStringOutBase64", StaticHashStringOutBase64);
       Nan::SetMethod(tpl, "hashBufferOutBase64", StaticHashBufferOutBase64);
 
-      target->Set(name, tpl->GetFunction(Isolate::GetCurrent()->GetCurrentContext()).ToLocalChecked());
+      target->Set(Nan::GetCurrentContext(), name, tpl->GetFunction(Nan::GetCurrentContext()).ToLocalChecked()).Check();
 
-      constructor_64.Reset(tpl);
+      constructor_64.Reset(tpl->GetFunction(Nan::GetCurrentContext()).ToLocalChecked());
     }
+
 };
 
 #endif

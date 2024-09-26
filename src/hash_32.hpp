@@ -5,7 +5,7 @@
 
 using namespace v8;
 
-Nan::Persistent<FunctionTemplate> constructor_32;
+Nan::Persistent<Function> constructor_32;
 
 class Hash32 : public node::ObjectWrap {
   public:
@@ -159,9 +159,9 @@ class Hash32 : public node::ObjectWrap {
       Nan::SetPrototypeMethod(tpl, "digest", Digest);
       Nan::SetMethod(tpl, "hash", StaticHash);
 
-      target->Set(name, tpl->GetFunction(Isolate::GetCurrent()->GetCurrentContext()).ToLocalChecked());
+      target->Set(Nan::GetCurrentContext(), name, tpl->GetFunction(Nan::GetCurrentContext()).ToLocalChecked()).Check();
 
-      constructor_32.Reset(tpl);
+      constructor_32.Reset(tpl->GetFunction(Nan::GetCurrentContext()).ToLocalChecked());
     }
 };
 
